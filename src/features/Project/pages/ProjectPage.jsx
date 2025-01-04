@@ -4,7 +4,8 @@ import ProjectCreatePage from "./ProjectCreatePage";
 import useSWR, { mutate, useSWRConfig } from "swr";
 
 const ProjectPage = () => {
-  const api = import.meta.env.VITE_API_URL + "/projects";
+  const api =
+    import.meta.env.VITE_API_URL + "/projects?_sort=serial&_order=ASC";
   const fetcher = (...args) => fetch(...args).then((res) => res.json());
   const { data, error, isLoading } = useSWR(api, fetcher);
   const [pendingProjects, setPendingProjects] = useState([]);
@@ -34,9 +35,6 @@ const ProjectPage = () => {
         pendingProjects={pendingProjects}
         inProgressProjects={inProgressProjects}
         completeProjects={completeProjects}
-        setCompleteProjects={setCompleteProjects}
-        setInProgressProjects={setInProgressProjects}
-        setPendingProjects={setPendingProjects}
       />
     </div>
   );

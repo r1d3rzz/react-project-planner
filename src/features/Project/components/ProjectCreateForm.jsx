@@ -1,8 +1,8 @@
 import { toast } from "react-hot-toast";
 import { useForm } from "react-hook-form";
-import getProjects from "../../../services/project/getProjects";
 import storeProject from "../../../services/project/storeProject";
 import useSWR from "swr";
+import { useState } from "react";
 
 const ProjectCreateForm = ({ addNewProjectHandler }) => {
   const {
@@ -13,7 +13,7 @@ const ProjectCreateForm = ({ addNewProjectHandler }) => {
   } = useForm();
 
   const api = import.meta.env.VITE_API_URL + "/projects";
-  let newSerialNumber = 0;
+  let [newSerialNumber, setNewSerialNumber] = useState(0);
 
   const fetcher = (...args) => fetch(...args).then((res) => res.json());
   const { data, error, isLoading } = useSWR(api, fetcher);
@@ -23,31 +23,29 @@ const ProjectCreateForm = ({ addNewProjectHandler }) => {
 
   const projects = data;
 
-  const getNewSerialNumber = async () => {
-    let projectSerialNumber = [];
-    if (projects.length > 0) {
-      projects.filter((project) => {
+  const calculateNewSerialNumber = () => {
+    let projectSerialNumbers = [];
+    if (projects && projects.length > 0) {
+      projects.forEach((project) => {
         if (project.status === "pending") {
-          return projectSerialNumber.push(project.serial);
+          projectSerialNumbers.push(project.serial);
         }
       });
-      newSerialNumber = Math.max(...projectSerialNumber) + 1;
-    } else {
-      newSerialNumber = 1;
+      return Math.max(...projectSerialNumbers) + 1;
     }
+    return 0;
   };
-
-  getNewSerialNumber();
 
   const onSubmit = async (data) => {
     if (data.isConfirm) {
+      const nextSerialNumber = calculateNewSerialNumber(); // Get the serial number dynamically
       const projectData = {
         title: data.title,
         detail: data.detail,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         status: "pending",
-        serial: newSerialNumber,
+        serial: nextSerialNumber,
       };
       const res = await storeProject(projectData);
       if (res.ok) {
