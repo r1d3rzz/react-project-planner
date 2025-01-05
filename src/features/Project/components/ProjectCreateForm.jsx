@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import storeProject from "../../../services/project/storeProject";
 import useSWR from "swr";
 import { useState } from "react";
+import getProjects from "../../../services/project/getProjects";
 
 const ProjectCreateForm = ({ addNewProjectHandler }) => {
   const {
@@ -13,8 +14,6 @@ const ProjectCreateForm = ({ addNewProjectHandler }) => {
   } = useForm();
 
   const api = import.meta.env.VITE_API_URL + "/projects";
-  let [newSerialNumber, setNewSerialNumber] = useState(0);
-
   const fetcher = (...args) => fetch(...args).then((res) => res.json());
   const { data, error, isLoading } = useSWR(api, fetcher);
 
@@ -23,10 +22,10 @@ const ProjectCreateForm = ({ addNewProjectHandler }) => {
 
   const projects = data;
 
-  const calculateNewSerialNumber = () => {
+  const calculateNewSerialNumber = (recentProjects) => {
     let projectSerialNumbers = [];
-    if (projects && projects.length > 0) {
-      projects.forEach((project) => {
+    if (recentProjects && recentProjects.length > 0) {
+      recentProjects.forEach((project) => {
         if (project.status === "pending") {
           projectSerialNumbers.push(project.serial);
         }
@@ -35,10 +34,11 @@ const ProjectCreateForm = ({ addNewProjectHandler }) => {
     }
     return 0;
   };
-
   const onSubmit = async (data) => {
+    const recentProjects = await getProjects();
     if (data.isConfirm) {
-      const nextSerialNumber = calculateNewSerialNumber(); // Get the serial number dynamically
+      const nextSerialNumber = calculateNewSerialNumber(recentProjects); // Get the serial number dynamically
+
       const projectData = {
         title: data.title,
         detail: data.detail,

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ProjectsList from "../components/ProjectsList";
 import ProjectCreatePage from "./ProjectCreatePage";
 import useSWR, { mutate, useSWRConfig } from "swr";
+import useIsSubmit from "../../../stores/useIsSubmit";
 
 const ProjectPage = () => {
   const api =
@@ -12,9 +13,15 @@ const ProjectPage = () => {
   const [inProgressProjects, setInProgressProjects] = useState([]);
   const [completeProjects, setCompleteProjects] = useState([]);
   const { mutate } = useSWRConfig();
+  const { isSubmit, setIsSubmit } = useIsSubmit();
   const addNewProjectHandler = () => {
     mutate(api);
   };
+
+  if (isSubmit === true) {
+    addNewProjectHandler();
+    setIsSubmit(false);
+  }
 
   useEffect(() => {
     if (!isLoading && data) {

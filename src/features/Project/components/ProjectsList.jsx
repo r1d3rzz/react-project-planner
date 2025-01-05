@@ -4,6 +4,7 @@ import CompleteProject from "./CompleteProject";
 import InProgressProject from "./InProgressProject";
 import EmptyTask from "./EmptyTask";
 import Sortable from "sortablejs";
+import sortableProject from "../../../services/project/sortableProject";
 
 const ProjectsList = ({
   isLoading,
@@ -21,53 +22,14 @@ const ProjectsList = ({
     inProgressDashboard != null &&
     completeDashboard != null
   ) {
-    Sortable.create(pendingDashboard, {
-      animation: 150,
-      group: "projects",
-      draggable: ".project",
-      store: {
-        set: (sortable) => {
-          const order = sortable.toArray();
-          localStorage.setItem(
-            "pendingProjects",
-            JSON.stringify({
-              type: "pending",
-              order: order.join("|"),
-            })
-          );
-        },
-      },
-      onSort: function (evt) {
-        setTimeout(async () => {
-          const orderData = JSON.parse(localStorage.getItem("pendingProjects"));
-          const res = await fetch(api);
-          if (res.ok) {
-            // order => project_id
-            if (orderData.type === "pending") {
-              orderData.order.split("|").forEach(async (order, index) => {
-                await fetch(api + "/" + order, {
-                  method: "PATCH",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({ serial: index }),
-                });
-              });
-            }
-          }
-        }, 2000);
-      },
-    });
-    Sortable.create(inProgressDashboard, {
-      animation: 150,
-      group: "projects",
-      draggable: ".project",
-    });
-    Sortable.create(completeDashboard, {
-      animation: 150,
-      group: "projects",
-      draggable: ".project",
-    });
+    sortableProject(pendingDashboard, "pendingDashboard", "pending", api);
+    sortableProject(
+      inProgressDashboard,
+      "inProgressDashboard",
+      "in-progress",
+      api
+    );
+    sortableProject(completeDashboard, "completeDashboard", "complete", api);
   }
   return (
     <div>
@@ -80,39 +42,30 @@ const ProjectsList = ({
           <div className="col-span-1">
             <div className="font-headingText mb-3">Pending</div>
             <div className="shadow p-3 bg-yellow-100" id="pendingDashboard">
-              {pendingProjects.length > 0 ? (
+              {pendingProjects.length > 0 &&
                 pendingProjects.map((project) => (
                   <PendingProject key={project.id} project={project} />
-                ))
-              ) : (
-                <EmptyTask />
-              )}
+                ))}
             </div>
           </div>
 
           <div className="col-span-1">
             <div className="font-headingText mb-3">In Progress</div>
             <div className="shadow p-3 bg-green-200" id="inProgressDashboard">
-              {inProgressProjects.length > 0 ? (
+              {inProgressProjects.length > 0 &&
                 inProgressProjects.map((project) => (
                   <InProgressProject key={project.id} project={project} />
-                ))
-              ) : (
-                <EmptyTask />
-              )}
+                ))}
             </div>
           </div>
 
           <div className="col-span-1">
             <div className="font-headingText mb-3">Complete</div>
             <div className="shadow p-3 bg-blue-100" id="completeDashboard">
-              {completeProjects.length > 0 ? (
+              {completeProjects.length > 0 &&
                 completeProjects.map((project) => (
                   <CompleteProject key={project.id} project={project} />
-                ))
-              ) : (
-                <EmptyTask />
-              )}
+                ))}
             </div>
           </div>
         </div>

@@ -1,14 +1,7 @@
-import React from "react";
+import ProjectCard from "./ProjectCard";
 
-const PendingProject = ({ project: { title, detail, id } }) => {
-  return (
-    <div className="shadow p-3 mb-3 last:mb-0 bg-white project" data-id={id}>
-      <h3>
-        {title} [{id}]
-      </h3>
-      <p>{detail}</p>
-    </div>
-  );
+const PendingProject = ({ project }) => {
+  return <ProjectCard project={project} />;
 };
 
 export default PendingProject;
